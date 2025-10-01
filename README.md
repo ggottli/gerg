@@ -1,4 +1,37 @@
 # =============================
+# README.md
+# =============================
+# gerg
+
+
+**gerg** is a command‑line agent that uses your **local Ollama** model to plan shell commands for a natural‑language task. It shows you the plan as JSON, then (optionally) executes the commands for you.
+
+
+> Safety-first: by default gerg *asks before running anything*. Use `--yes` to auto‑run, and see `--allow-unsafe` to permit risky commands.
+
+
+## Install
+
+
+```bash
+pip install . # from a cloned repo
+# or once published:
+# pip install gerg
+```
+
+
+## Quick start
+
+
+1) Make sure Ollama is running locally (default `http://127.0.0.1:11434`).
+2) Pull a model (for example):
+```bash
+ollama pull phi3:latest
+```
+3) Run gerg:
+```bash
+gerg "list all files in my Downloads directory"
+```
 4) Approve the plan or run automatically:
 ```bash
 gerg -y "compress the Downloads folder into downloads.zip"
@@ -39,31 +72,4 @@ gerg --verbose "kill the process listening on port 8080"
 
 
 ## Why JSON plans?
-
-
-The agent prompt asks the model to return a **strict JSON** plan with `explanation`, `commands`, and `require_confirmation`. This keeps execution deterministic and auditable. Plans and run results are stored in `.gerg_history.jsonl` in your working directory (and optionally in `history_dir`).
-
-
----
-
-
-## Safety
-
-
-- Denylist (e.g., `rm -rf /`, `:(){ :|:& };:`, `mkfs`, `shutdown`, etc.).
-- Path confinement: you can require commands to stay under `--cwd`.
-- Dry‑run by default; `--yes` to execute.
-- `--allow-unsafe` required for commands matching the denylist.
-
-
----
-
-
-## Development
-
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e .[dev]
-pytest -q
 ```
