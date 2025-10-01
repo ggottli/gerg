@@ -1,16 +1,12 @@
-# =============================
-# gerg/config.py
-# =============================
 from __future__ import annotations
 import os
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
 try:
-    import tomllib  # py311+
-except Exception:  # pragma: no cover
-    import tomli as tomllib  # type: ignore
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Backport for <3.11
 
 
 DEFAULTS = {
@@ -37,12 +33,12 @@ class Settings:
 def load_settings() -> Settings:
     data = DEFAULTS.copy()
 
-    for p in CONFIG_PATHS:
-        if p and p.exists():
-            with open(p, "rb") as f:
+    for path in CONFIG_PATHS:
+        if path and path.exists():
+            with open(path, "rb") as f:
                 data.update(tomllib.load(f))
 
-    # env overrides
+    # environment overrides
     if os.getenv("GERG_MODEL"):
         data["model"] = os.environ["GERG_MODEL"]
     if os.getenv("GERG_OLLAMA_BASE_URL"):
@@ -54,3 +50,4 @@ def load_settings() -> Settings:
 
     Path(data["history_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
     return Settings(**data)
+
