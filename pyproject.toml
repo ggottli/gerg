@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gerg"
-version = "0.1.0"
+version = "0.0.1"
 description = "CLI agent that collaborates with you by planning and running shell commands via a local Ollama model"
 readme = "README.md"
 authors = [{ name = "Greg Gottlieb" }]
@@ -21,10 +21,12 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.urls]
+Homepage = "https://github.com/ggottli/gerg"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["gerg"]
+
 [project.scripts]
-# installs `gerg` on PATH
 gerg = "gerg.cli:main"
-
-[tool.setuptools.package-data]
-# no extra package data yet
-

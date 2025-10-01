@@ -18,9 +18,9 @@ AGENT_SYSTEM_PROMPT = (
     "4) Favor POSIX-compatible utilities when possible.\n"
     "Examples:\n"
     "  - Goal: 'go to my Downloads and list all pdfs'\n"
-    "    Plan: {\"explanation\":\"List PDFs in Downloads\",\"commands\":[\"find ~/Downloads -maxdepth 1 -type f -iname '*.pdf'\"],\"require_confirmation\":false}\n"
+    '    Plan: {"explanation":"List PDFs in Downloads","commands":["find ~/Downloads -maxdepth 1 -type f -iname \'*.pdf\'"],"require_confirmation":false}\n'
     "  - Goal: 'get me to the home directory'\n"
-    "    Plan: {\"explanation\":\"Show home path\",\"commands\":[\"pwd\"],\"require_confirmation\":false}\n"
+    '    Plan: {"explanation":"Show home path","commands":["pwd"],"require_confirmation":false}\n'
 )
 
 # ===== RAG + thinking mode =====
@@ -58,7 +58,9 @@ class Plan:
             raise ValueError("Plan.explanation must be a string")
 
         commands = obj.get("commands", [])
-        if not isinstance(commands, list) or not all(isinstance(c, str) for c in commands):
+        if not isinstance(commands, list) or not all(
+            isinstance(c, str) for c in commands
+        ):
             raise ValueError("Plan.commands must be a list of strings")
 
         require_confirmation = obj.get("require_confirmation", True)
@@ -118,7 +120,9 @@ def _strip_code_fences(s: str) -> str:
     return t
 
 
-def _post_ollama(base_url: str, payload: Dict[str, Any], timeout: int) -> Dict[str, Any]:
+def _post_ollama(
+    base_url: str, payload: Dict[str, Any], timeout: int
+) -> Dict[str, Any]:
     url = base_url.rstrip("/") + "/api/chat"
     resp = requests.post(url, json=payload, timeout=timeout)
     resp.raise_for_status()
@@ -159,7 +163,9 @@ def request_plan(
     try:
         obj = json.loads(content)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse plan JSON: {e}\nRaw content:\n{content}") from e
+        raise ValueError(
+            f"Failed to parse plan JSON: {e}\nRaw content:\n{content}"
+        ) from e
 
     return Plan.from_obj(obj)
 
@@ -178,9 +184,16 @@ def request_next_action(
       [{"role":"user","content": "<goal>"}, {"role":"assistant","content":"<prev command/explanation>"}, {"role":"user","content":"OBSERVATION: <stdout/stderr>"} ...]
     Optionally include `rag_context` (short text) to help reasoning.
     """
-    messages: List[Dict[str, str]] = [{"role": "system", "content": THINK_SYSTEM_PROMPT}]
+    messages: List[Dict[str, str]] = [
+        {"role": "system", "content": THINK_SYSTEM_PROMPT}
+    ]
     if rag_context:
-        messages.append({"role": "system", "content": f"RAG CONTEXT (read-only):\n{rag_context[:20000]}"})
+        messages.append(
+            {
+                "role": "system",
+                "content": f"RAG CONTEXT (read-only):\n{rag_context[:20000]}",
+            }
+        )
     messages.extend(conversation)
 
     payload = {
@@ -208,6 +221,8 @@ def request_next_action(
     try:
         obj = json.loads(content)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse next-action JSON: {e}\nRaw content:\n{content}") from e
+        raise ValueError(
+            f"Failed to parse next-action JSON: {e}\nRaw content:\n{content}"
+        ) from e
 
     return NextAction.from_obj(obj)
