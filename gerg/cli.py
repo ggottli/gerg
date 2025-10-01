@@ -21,14 +21,34 @@ def _print_plan(plan) -> None:
 
 
 def execute_commands(commands: List[str], cwd: Path) -> int:
-    for i, cmd in enumerate(commands, 1):
+    cur_cwd = cwd
+
+    for i, raw_cmd in enumerate(commands, 1):
+        cmd = raw_cmd.strip()
+
+        # Handle 'cd <path>' locally to persist across subsequent commands
+        if cmd.startswith("cd "):
+            target = cmd[3:].strip()
+            # Expand ~ and make relative paths relative to current working dir
+            new_dir = Path(target).expanduser()
+            if not new_dir.is_absolute():
+                new_dir = (cur_cwd / new_dir).resolve()
+
+            print(f"\n{ANSI_BOLD}▶ Changing directory {i}/{len(commands)}:{ANSI_RESET} {new_dir}")
+            if not new_dir.exists() or not new_dir.is_dir():
+                print(f"Directory does not exist: {new_dir}", file=sys.stderr)
+                return 1
+            cur_cwd = new_dir
+            continue
+
         print(f"\n{ANSI_BOLD}▶ Running {i}/{len(commands)}:{ANSI_RESET} {cmd}")
-        # shell=True to allow pipes/redirects; inherit env/tty
-        proc = subprocess.run(cmd, shell=True, cwd=str(cwd))
+        proc = subprocess.run(cmd, shell=True, cwd=str(cur_cwd))
         if proc.returncode != 0:
             print(f"Command failed with return code {proc.returncode}", file=sys.stderr)
             return proc.returncode
+
     return 0
+
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -86,6 +106,20 @@ def main(argv: List[str] | None = None) -> int:
 
     print()
     _print_plan(plan)
+
+    # Reject plans that contain no actionable commands
+    nontrivial = [c for c in plan.commands if c.strip() and not c.strip().lower().startswith("cd ")]
+    if not nontrivial:
+        print("The plan contains only directory changes or no actionable commands.")
+        print('Tip: try rephrasing, e.g., gerg --print "list all PDFs in ~/Downloads"')
+        write_history_line(run_dir, {
+            "goal": goal,
+            "model": model,
+            "plan": plan.__dict__,
+            "status": "no_actionable_commands",
+        })
+        return 0
+
 
     if args.print_only:
         write_history_line(run_dir, {
