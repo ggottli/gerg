@@ -1,0 +1,35 @@
+# =============================
+# pyproject.toml
+# =============================
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "gerg"
+version = "0.1.0"
+description = "CLI agent that collaborates with you by planning and running shell commands via a local Ollama model"
+readme = "README.md"
+authors = [{ name = "Greg Gottlieb" }]
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+"requests>=2.31.0",
+"tomli; python_version<'3.11'",
+]
+keywords = ["ollama", "cli", "agent", "shell", "automation"]
+classifiers = [
+"Programming Language :: Python :: 3",
+"License :: OSI Approved :: MIT License",
+"Operating System :: OS Independent",
+]
+
+
+[project.scripts]
+# installs `gerg` on PATH
+gerg = "gerg.cli:main"
+
+
+[tool.setuptools.package-data]
+# (none)
