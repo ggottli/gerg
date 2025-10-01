@@ -13,13 +13,19 @@ DEFAULTS = {
     "model": "phi3:latest",
     "ollama_base_url": "http://127.0.0.1:11434",
     "confirm_by_default": True,
-    "history_dir": str(Path.home() / ".local/share/gerg"),
+    "history_dir": str(Path.home() / ".local" / "share" / "gerg"),
 }
 
-CONFIG_PATHS = [
-    Path(os.environ.get("GERG_CONFIG", "")),
-    Path.home() / ".config/gerg/config.toml",
-]
+# Only include an explicit file path if GERG_CONFIG is set and points to a file
+env_cfg = os.environ.get("GERG_CONFIG")
+CONFIG_PATHS = []
+if env_cfg:
+    p = Path(env_cfg).expanduser()
+    if p.is_file():
+        CONFIG_PATHS.append(p)
+
+# Standard user config path
+CONFIG_PATHS.append(Path.home() / ".config" / "gerg" / "config.toml")
 
 
 @dataclass
@@ -34,20 +40,30 @@ def load_settings() -> Settings:
     data = DEFAULTS.copy()
 
     for path in CONFIG_PATHS:
-        if path and path.exists():
-            with open(path, "rb") as f:
-                data.update(tomllib.load(f))
+        try:
+            if path.is_file():
+                with open(path, "rb") as f:
+                    data.update(tomllib.load(f))
+        except Exception:
+            # Ignore malformed configs; keep defaults/env overrides
+            pass
 
-    # environment overrides
-    if os.getenv("GERG_MODEL"):
-        data["model"] = os.environ["GERG_MODEL"]
-    if os.getenv("GERG_OLLAMA_BASE_URL"):
-        data["ollama_base_url"] = os.environ["GERG_OLLAMA_BASE_URL"]
-    if os.getenv("GERG_CONFIRM"):
-        data["confirm_by_default"] = os.environ["GERG_CONFIRM"].lower() in {"1", "true", "yes"}
-    if os.getenv("GERG_HISTORY_DIR"):
-        data["history_dir"] = os.environ["GERG_HISTORY_DIR"]
+    # Environment overrides
+    model = os.environ.get("GERG_MODEL")
+    if model:
+        data["model"] = model
+
+    base = os.environ.get("GERG_OLLAMA_BASE_URL")
+    if base:
+        data["ollama_base_url"] = base
+
+    confirm = os.environ.get("GERG_CONFIRM")
+    if confirm is not None:
+        data["confirm_by_default"] = confirm.lower() in {"1", "true", "yes"}
+
+    hist = os.environ.get("GERG_HISTORY_DIR")
+    if hist:
+        data["history_dir"] = hist
 
     Path(data["history_dir"]).expanduser().mkdir(parents=True, exist_ok=True)
     return Settings(**data)
-
