@@ -12,7 +12,7 @@
 
 ```bash
 pip install . # from a cloned repo
-# or once published:
+# Eventually once published:
 # pip install gerg
 ```
 
@@ -61,12 +61,4 @@ gerg -m llama3:8b "init a git repo, make first commit"
 
 # Work from another directory (without cd'ing first)
 gerg --cwd ~/Projects/website "build the site and serve locally"
-
-
-# Stream model thoughts (justification) if available
-gerg --verbose "kill the process listening on port 8080"
-```
-
-
-## Why JSON plans?
 ```
