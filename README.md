@@ -25,6 +25,10 @@ gerg "list all files in my Downloads directory"
 gerg -y "compress the Downloads folder into downloads.zip"
 ```
 4) Need multi-step planning and commands. Enable the --think flag for Chain of Thought planning and execution.
+5) Change default model with:
+```bash
+export GERG_MODEL="DESIRED MODEL"
+```
 
 ## Examples
 
