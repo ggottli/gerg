@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 
 DEFAULTS = {
-    "model": "phi3:latest",
+    "model": "qwen2.5-coder:1.5b",
     "ollama_base_url": "http://127.0.0.1:11434",
     "confirm_by_default": True,
     "history_dir": str(Path.home() / ".local" / "share" / "gerg"),
